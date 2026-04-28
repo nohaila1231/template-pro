@@ -1,0 +1,20 @@
+{
+  "name": "template-pro",
+  "version": "1.0.0",
+  "description": "Template réutilisable pour pipelines Node.js.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nohaila1231/template-pro.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nohaila1231/template-pro/issues"
+  },
+  "homepage": "https://github.com/nohaila1231/template-pro#readme"
+}
