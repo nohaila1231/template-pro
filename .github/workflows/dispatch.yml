@@ -1,31 +1,39 @@
-name: '🚀 Lancer CI (Avec Menu)'
+name: '🚀 Lancer CI sur TOUTES les apps'
 
 on:
   workflow_dispatch:
     inputs:
-      app-repo:
-        description: 'Dépôt de l application'
-        required: true
-        default: 'nohaila1231/app-1-auth'
       node-version:
         description: 'Version Node.js'
-        type: choice
-        options: ['16', '18', '20', '22']
+        required: true
         default: '18'
+        type: choice
+        options:
+          - '16'
+          - '18'
+          - '20'
+          - '22'
+          - '24'
       run-tests:
         description: 'Exécuter les tests'
-        type: boolean
-        default: true
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
 jobs:
-  trigger:
+  # Job pour chaque application
+  test-app-1-auth:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout le dépôt cible
+      - name: Checkout app-1-auth
         uses: actions/checkout@v4
         with:
-          repository: ${{ inputs.app-repo }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: nohaila1231/app-1-auth
+          token: ${{ secrets.PAT_TOKEN }}
+          ref: main
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -42,7 +50,100 @@ jobs:
         run: npm ci
       
       - name: Tests
-        if: ${{ inputs.run-tests == true }}
+        if: ${{ inputs.run-tests == 'true' }}
+        run: npm test
+      
+      - name: Build
+        run: npm run build
+
+  test-app-2-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout app-2-api
+        uses: actions/checkout@v4
+        with:
+          repository: nohaila1231/app-2-api
+          token: ${{ secrets.PAT_TOKEN }}
+          ref: main
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+      
+      - name: Cache npm
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node${{ inputs.node-version }}-${{ hashFiles('package-lock.json') }}
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Tests
+        if: ${{ inputs.run-tests == 'true' }}
+        run: npm test
+      
+      - name: Build
+        run: npm run build
+
+  test-app-3-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout app-3-frontend
+        uses: actions/checkout@v4
+        with:
+          repository: nohaila1231/app-3-frontend
+          token: ${{ secrets.PAT_TOKEN }}
+          ref: main
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+      
+      - name: Cache npm
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node${{ inputs.node-version }}-${{ hashFiles('package-lock.json') }}
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Tests
+        if: ${{ inputs.run-tests == 'true' }}
+        run: npm test
+      
+      - name: Build
+        run: npm run build
+
+  test-app-4-worker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout app-4-worker
+        uses: actions/checkout@v4
+        with:
+          repository: nohaila1231/app-4-worker
+          token: ${{ secrets.PAT_TOKEN }}
+          ref: main
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+      
+      - name: Cache npm
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node${{ inputs.node-version }}-${{ hashFiles('package-lock.json') }}
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Tests
+        if: ${{ inputs.run-tests == 'true' }}
         run: npm test
       
       - name: Build
