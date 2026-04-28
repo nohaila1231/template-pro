@@ -1,0 +1,28 @@
+# template-pro/.github/workflows/dispatch.yml
+name: '🚀 Lancer CI (Avec Menu)'
+
+on:
+  workflow_dispatch:
+    # C'est ICI qu'est défini le formulaire visible par l'utilisateur
+    inputs:
+      app-repo:
+        description: 'Dépôt de l application'
+        required: true
+        default: 'nohaila1231/app-1-auth'
+      node-version:
+        description: 'Version Node.js'
+        type: choice
+        options: ['18', '20', '22']
+        default: '18'
+      run-tests:
+        description: 'Exécuter les tests'
+        type: boolean
+        default: true
+
+jobs:
+  # Ce job ne fait qu'appeler le template "Coeur"
+  call-core-workflow:
+    uses: nohaila1231/template-pro/.github/workflows/ci.yml@main
+    with:
+      node-version: ${{ inputs.node-version }}
+      run-tests: ${{ inputs.run-tests }}
