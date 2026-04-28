@@ -1,18 +1,26 @@
 name: 'CI Pipeline'
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       node-version:
         description: 'Version Node.js'
-        required: false
-        type: string
+        required: true
         default: '18'
+        type: choice
+        options:
+          - '16'
+          - '18'
+          - '20'
+          - '22'
       run-tests:
         description: 'Activer les tests'
-        required: false
-        type: boolean
-        default: true
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
 jobs:
   ci:
@@ -22,23 +30,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       
-      - name: Setup Node.js ${{ inputs.node-version }}
+      - name: Setup Node.js ${{ github.event.inputs.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ inputs.node-version }}
+          node-version: ${{ github.event.inputs.node-version }}
       
       - name: Cache npm
         uses: actions/cache@v3
         id: cache
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node${{ inputs.node-version }}-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-node${{ github.event.inputs.node-version }}-${{ hashFiles('package-lock.json') }}
       
       - name: Install dependencies
         run: npm ci
       
       - name: Tests
-        if: ${{ inputs.run-tests == true }}
+        if: ${{ github.event.inputs.run-tests == 'true' }}
         run: npm test
       
       - name: Build
@@ -48,7 +56,7 @@ jobs:
         run: |
           echo "========================================="
           echo "✅ Pipeline terminé"
-          echo "📦 Node.js: ${{ inputs.node-version }}"
-          echo "🧪 Tests: ${{ inputs.run-tests }}"
+          echo "📦 Node.js: ${{ github.event.inputs.node-version }}"
+          echo "🧪 Tests: ${{ github.event.inputs.run-tests }}"
           echo "💾 Cache: ${{ steps.cache.outputs.cache-hit == 'true' && 'RESTAURÉ' || 'CRÉÉ' }}"
           echo "========================================="
