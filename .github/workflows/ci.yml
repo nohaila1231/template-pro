@@ -1,8 +1,18 @@
-name: 'CI Pipeline'
+name: '🚀 Lancer CI avec paramètres'
 
 on:
   workflow_dispatch:
     inputs:
+      app-name:
+        description: 'Nom de l application'
+        required: true
+        default: 'app-1-auth'
+        type: choice
+        options:
+          - 'app-1-auth'
+          - 'app-2-api'
+          - 'app-3-frontend'
+          - 'app-4-worker'
       node-version:
         description: 'Version Node.js'
         required: true
@@ -21,18 +31,6 @@ on:
         options:
           - 'true'
           - 'false'
-  workflow_call:
-    inputs:
-      node-version:
-        description: 'Version Node.js'
-        required: false
-        type: string
-        default: '18'
-      run-tests:
-        description: 'Activer les tests'
-        required: false
-        type: boolean
-        default: true
 
 jobs:
   ci:
@@ -45,20 +43,20 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ github.event.inputs.node-version || inputs.node-version }}
+          node-version: ${{ github.event.inputs.node-version }}
       
       - name: Cache npm
         uses: actions/cache@v3
         id: cache
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node${{ github.event.inputs.node-version || inputs.node-version }}-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-node${{ github.event.inputs.node-version }}-${{ hashFiles('package-lock.json') }}
       
       - name: Install dependencies
         run: npm ci
       
       - name: Tests
-        if: ${{ (github.event.inputs.run-tests || inputs.run-tests) == 'true' }}
+        if: ${{ github.event.inputs.run-tests == 'true' }}
         run: npm test
       
       - name: Build
@@ -66,11 +64,9 @@ jobs:
       
       - name: Résultat
         run: |
-          NODE_VER="${{ github.event.inputs.node-version || inputs.node-version }}"
-          TEST_VAL="${{ github.event.inputs.run-tests || inputs.run-tests }}"
           echo "========================================="
-          echo "✅ Pipeline terminé"
-          echo "📦 Node.js: $NODE_VER"
-          echo "🧪 Tests: $TEST_VAL"
+          echo "✅ Pipeline terminé pour ${{ github.event.inputs.app-name }}"
+          echo "📦 Node.js: ${{ github.event.inputs.node-version }}"
+          echo "🧪 Tests: ${{ github.event.inputs.run-tests }}"
           echo "💾 Cache: ${{ steps.cache.outputs.cache-hit == 'true' && 'RESTAURÉ' || 'CRÉÉ' }}"
           echo "========================================="
