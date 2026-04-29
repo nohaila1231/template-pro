@@ -3,19 +3,12 @@ name: 'CI Pipeline'
 on:
   workflow_call:
     inputs:
-      node-version:
-        description: 'Version Node.js'
-        required: false
-        type: string
-        default: '18'
-      run-tests:
-        description: 'Exécuter les tests'
-        required: false
-        type: boolean
-        default: true
       target-repo:
         type: string
         required: true
+      run-tests:
+        type: boolean
+        default: true
     secrets:
       token:
         required: true
@@ -28,19 +21,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          repository: ${{inputs.target-repo}} 
-       
-      - name: Setup Node.js
+          repository: ${{ inputs.target-repo }}
+          token: ${{ secrets.token }}
+      
+      - name: Lire version Node depuis .node-version
+        id: node_version
+        run: |
+          if [ -f .node-version ]; then
+            NODE_VER=$(cat .node-version | tr -d ' \n\r')
+            echo "version=$NODE_VER" >> $GITHUB_OUTPUT
+            echo "✅ Version lue: $NODE_VER"
+          else
+            echo "version=18" >> $GITHUB_OUTPUT
+            echo "⚠️ .node-version non trouvé, utilisation 18"
+          fi
+      
+      - name: Setup Node.js ${{ steps.node_version.outputs.version }}
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ inputs.node-version }}
+          node-version: ${{ steps.node_version.outputs.version }}
       
       - name: Cache npm
         uses: actions/cache@v3
         id: cache
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node${{ inputs.node-version }}-${{ hashFiles('package-lock.json') }}
+          key: ${{ runner.os }}-node${{ steps.node_version.outputs.version }}-${{ hashFiles('package-lock.json') }}
       
       - name: Install dependencies
         run: npm ci
@@ -56,7 +62,8 @@ jobs:
         run: |
           echo "========================================="
           echo "✅ Pipeline terminé"
-          echo "📦 Node.js: ${{ inputs.node-version }}"
+          echo "📦 App: ${{ inputs.target-repo }}"
+          echo "🔧 Node.js: ${{ steps.node_version.outputs.version }}"
           echo "🧪 Tests: ${{ inputs.run-tests }}"
           echo "💾 Cache: ${{ steps.cache.outputs.cache-hit == 'true' && 'RESTAURÉ' || 'CRÉÉ' }}"
           echo "========================================="
