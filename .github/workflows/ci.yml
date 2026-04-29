@@ -13,6 +13,9 @@ on:
         required: false
         type: boolean
         default: true
+    secrets:
+      token:
+        required: true
 
 jobs:
   ci:
