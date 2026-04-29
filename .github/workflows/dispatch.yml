@@ -1,61 +1,61 @@
-name: '🚀 Lancer CI sur TOUTES les apps'
-
-on:
-  workflow_dispatch:
-    inputs:
-      node-version:
-        description: 'Version Node.js'
-        required: true
-        default: '18'
-        type: choice
-        options:
-          - '16'
-          - '18'
-          - '20'
-          - '22'
-          - '24'
-      run-tests:
-        description: 'Exécuter les tests'
-        required: true
-        default: 'true'
-        type: choice
-        options:
-          - 'true'
-          - 'false'
-
-jobs:
-  test-app-1-auth:
-    uses: ./.github/workflows/ci.yml
-    with:
-      node-version: ${{ inputs.node-version }}
-      run-tests: ${{ inputs.run-tests == 'true' }}
-      target-repo: nohaila1231/app-1-auth
-    secrets:
-      token: ${{ secrets.PAT_TOKEN }}
-
-  test-app-2-api:
-    uses: ./.github/workflows/ci.yml
-    with:
-      node-version: ${{ inputs.node-version }}
-      run-tests: ${{ inputs.run-tests == 'true' }}
-      target-repo: nohaila1231/app-2-api
-    secrets:
-      token: ${{ secrets.PAT_TOKEN }}
-
-  test-app-3-frontend:
-    uses: ./.github/workflows/ci.yml
-    with:
-      node-version: ${{ inputs.node-version }}
-      run-tests: ${{ inputs.run-tests == 'true' }}
-      target-repo: nohaila1231/app-3-frontend
-    secrets:
-      token: ${{ secrets.PAT_TOKEN }}
-
-  test-app-4-worker:
-    uses: ./.github/workflows/ci.yml
-    with:
-      node-version: ${{ inputs.node-version }}
-      run-tests: ${{ inputs.run-tests == 'true' }}
-      target-repo: nohaila1231/app-4-worker
-    secrets:
-      token: ${{ secrets.PAT_TOKEN }}
+# name: '🚀 Lancer CI sur TOUTES les apps'
+# 
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       node-version:
+#         description: 'Version Node.js'
+#         required: true
+#         default: '18'
+#         type: choice
+#         options:
+#           - '16'
+#           - '18'
+#           - '20'
+#           - '22'
+#           - '24'
+#       run-tests:
+#         description: 'Exécuter les tests'
+#         required: true
+#         default: 'true'
+#         type: choice
+#         options:
+#           - 'true'
+#           - 'false'
+# 
+# jobs:
+#   test-app-1-auth:
+#     uses: ./.github/workflows/ci.yml
+#     with:
+#       node-version: ${{ inputs.node-version }}
+#       run-tests: ${{ inputs.run-tests == 'true' }}
+#       target-repo: nohaila1231/app-1-auth
+#     secrets:
+#       token: ${{ secrets.PAT_TOKEN }}
+# 
+#   test-app-2-api:
+#     uses: ./.github/workflows/ci.yml
+#     with:
+#       node-version: ${{ inputs.node-version }}
+#       run-tests: ${{ inputs.run-tests == 'true' }}
+#       target-repo: nohaila1231/app-2-api
+#     secrets:
+#       token: ${{ secrets.PAT_TOKEN }}
+# 
+#   test-app-3-frontend:
+#     uses: ./.github/workflows/ci.yml
+#     with:
+#       node-version: ${{ inputs.node-version }}
+#       run-tests: ${{ inputs.run-tests == 'true' }}
+#       target-repo: nohaila1231/app-3-frontend
+#     secrets:
+#       token: ${{ secrets.PAT_TOKEN }}
+# 
+#   test-app-4-worker:
+#     uses: ./.github/workflows/ci.yml
+#     with:
+#       node-version: ${{ inputs.node-version }}
+#       run-tests: ${{ inputs.run-tests == 'true' }}
+#       target-repo: nohaila1231/app-4-worker
+#     secrets:
+#       token: ${{ secrets.PAT_TOKEN }}
