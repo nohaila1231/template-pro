@@ -29,6 +29,7 @@ jobs:
     with:
       node-version: ${{ inputs.node-version }}
       run-tests: ${{ inputs.run-tests == 'true' }}
+      target-repo: nohaila1231/app-1-auth
     secrets:
       token: ${{ secrets.PAT_TOKEN }}
 
@@ -37,6 +38,7 @@ jobs:
     with:
       node-version: ${{ inputs.node-version }}
       run-tests: ${{ inputs.run-tests == 'true' }}
+      target-repo: nohaila1231/app-2-api
     secrets:
       token: ${{ secrets.PAT_TOKEN }}
 
@@ -45,6 +47,7 @@ jobs:
     with:
       node-version: ${{ inputs.node-version }}
       run-tests: ${{ inputs.run-tests == 'true' }}
+      target-repo: nohaila1231/app-3-frontend
     secrets:
       token: ${{ secrets.PAT_TOKEN }}
 
@@ -53,5 +56,6 @@ jobs:
     with:
       node-version: ${{ inputs.node-version }}
       run-tests: ${{ inputs.run-tests == 'true' }}
+      target-repo: nohaila1231/app-4-worker
     secrets:
       token: ${{ secrets.PAT_TOKEN }}
