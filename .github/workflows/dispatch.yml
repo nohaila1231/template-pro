@@ -24,127 +24,34 @@ on:
           - 'false'
 
 jobs:
-  # Job pour chaque application
   test-app-1-auth:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout app-1-auth
-        uses: actions/checkout@v4
-        with:
-          repository: nohaila1231/app-1-auth
-          token: ${{ secrets.PAT_TOKEN }}
-          ref: main
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ inputs.node-version }}
-      
-      - name: Cache npm
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node${{ inputs.node-version }}-${{ hashFiles('package-lock.json') }}
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Tests
-        if: ${{ inputs.run-tests == 'true' }}
-        run: npm test
-      
-      - name: Build
-        run: npm run build
+    uses: ./.github/workflows/ci.yml
+    with:
+      node-version: ${{ inputs.node-version }}
+      run-tests: ${{ inputs.run-tests == 'true' }}
+    secrets:
+      token: ${{ secrets.PAT_TOKEN }}
 
   test-app-2-api:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout app-2-api
-        uses: actions/checkout@v4
-        with:
-          repository: nohaila1231/app-2-api
-          token: ${{ secrets.PAT_TOKEN }}
-          ref: main
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ inputs.node-version }}
-      
-      - name: Cache npm
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node${{ inputs.node-version }}-${{ hashFiles('package-lock.json') }}
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Tests
-        if: ${{ inputs.run-tests == 'true' }}
-        run: npm test
-      
-      - name: Build
-        run: npm run build
+    uses: ./.github/workflows/ci.yml
+    with:
+      node-version: ${{ inputs.node-version }}
+      run-tests: ${{ inputs.run-tests == 'true' }}
+    secrets:
+      token: ${{ secrets.PAT_TOKEN }}
 
   test-app-3-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout app-3-frontend
-        uses: actions/checkout@v4
-        with:
-          repository: nohaila1231/app-3-frontend
-          token: ${{ secrets.PAT_TOKEN }}
-          ref: main
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ inputs.node-version }}
-      
-      - name: Cache npm
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node${{ inputs.node-version }}-${{ hashFiles('package-lock.json') }}
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Tests
-        if: ${{ inputs.run-tests == 'true' }}
-        run: npm test
-      
-      - name: Build
-        run: npm run build
+    uses: ./.github/workflows/ci.yml
+    with:
+      node-version: ${{ inputs.node-version }}
+      run-tests: ${{ inputs.run-tests == 'true' }}
+    secrets:
+      token: ${{ secrets.PAT_TOKEN }}
 
   test-app-4-worker:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout app-4-worker
-        uses: actions/checkout@v4
-        with:
-          repository: nohaila1231/app-4-worker
-          token: ${{ secrets.PAT_TOKEN }}
-          ref: main
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ inputs.node-version }}
-      
-      - name: Cache npm
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node${{ inputs.node-version }}-${{ hashFiles('package-lock.json') }}
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Tests
-        if: ${{ inputs.run-tests == 'true' }}
-        run: npm test
-      
-      - name: Build
-        run: npm run build
+    uses: ./.github/workflows/ci.yml
+    with:
+      node-version: ${{ inputs.node-version }}
+      run-tests: ${{ inputs.run-tests == 'true' }}
+    secrets:
+      token: ${{ secrets.PAT_TOKEN }}
