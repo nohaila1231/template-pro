@@ -22,7 +22,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.target-repo }}
-          token: ${{ secrets.token }}
       
       - name: Lire version Node depuis .node-version
         id: node_version
