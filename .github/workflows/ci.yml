@@ -11,7 +11,7 @@ on:
         default: true
     secrets:
       token:
-        required: true
+        required: false
 
 jobs:
   ci:
