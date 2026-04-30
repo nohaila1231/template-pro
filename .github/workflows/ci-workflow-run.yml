@@ -13,36 +13,32 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     
     steps:
-      - name: Download trigger info
-        uses: actions/github-script@v7
-        id: get-info
+      # Étape 1 : Télécharger l'artifact créé par app-4-worker
+      - name: Download trigger artifact
+        uses: actions/download-artifact@v4
         with:
-          script: |
-            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: ${{ github.event.workflow_run.id }}
-            });
-            
-            if (artifacts.data.artifacts.length > 0) {
-              const download = await github.rest.actions.downloadArtifact({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                artifact_id: artifacts.data.artifacts[0].id,
-                archive_format: 'zip'
-              });
-              // Traitement de l'artifact
-              console.log("Artifact téléchargé");
-            }
-            
-            const triggerRepo = process.env.TRIGGER_REPO || '${{ github.repository }}';
-            return { targetRepo: triggerRepo };
+          name: trigger-info
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       
+      # Étape 2 : Lire le fichier pour connaître le repo cible
+      - name: Read trigger info
+        id: info
+        run: |
+          echo "📄 Contenu de l'artifact :"
+          cat trigger-info.txt
+          TARGET_REPO=$(grep "target-repo=" trigger-info.txt | cut -d'=' -f2)
+          echo "target_repo=$TARGET_REPO" >> $GITHUB_OUTPUT
+          echo "🎯 Repo cible : $TARGET_REPO"
+      
+      # Étape 3 : Checkout du code de l'application
       - name: Checkout target repo
         uses: actions/checkout@v4
         with:
-          repository: ${{ steps.get-info.outputs.result && fromJson(steps.get-info.outputs.result).targetRepo || github.repository }}
+          repository: ${{ steps.info.outputs.target_repo }}
+          token: ${{ secrets.PAT_TOKEN }}  # ← PAT token pour accéder au dépôt privé
       
+      # Étape 4 : Lire la version Node
       - name: Lire version Node depuis .node-version
         id: node_version
         run: |
@@ -55,11 +51,13 @@ jobs:
             echo "⚠️ .node-version non trouvé, utilisation 18"
           fi
       
+      # Étape 5 : Setup Node.js
       - name: Setup Node.js ${{ steps.node_version.outputs.version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ steps.node_version.outputs.version }}
       
+      # Étape 6 : Cache npm
       - name: Cache npm
         uses: actions/cache@v3
         id: cache
@@ -67,17 +65,20 @@ jobs:
           path: ~/.npm
           key: ${{ runner.os }}-node${{ steps.node_version.outputs.version }}-${{ hashFiles('**/package-lock.json') }}
       
+      # Étape 7 : Installer les dépendances
       - name: Install dependencies
         run: npm ci
       
+      # Étape 8 : Build
       - name: Build
         run: npm run build
       
+      # Étape 9 : Résultat
       - name: Résultat
         run: |
           echo "========================================="
-          echo "✅ Pipeline terminé (workflow_run - déclenché automatiquement)"
-          echo "📦 App: ${{ github.repository }}"
+          echo "✅ Pipeline terminé (workflow_run)"
+          echo "📦 App: ${{ steps.info.outputs.target_repo }}"
           echo "🔧 Node.js: ${{ steps.node_version.outputs.version }}"
           echo "💾 Cache: ${{ steps.cache.outputs.cache-hit == 'true' && 'RESTAURÉ' || 'CRÉÉ' }}"
           echo "========================================="
