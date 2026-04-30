@@ -1,0 +1,75 @@
+name: 'CI Pipeline - workflow_dispatch'
+
+on:
+  workflow_dispatch:
+    inputs:
+      target-repo:
+        type: string
+        required: true
+        description: 'Repository to run CI on'
+      run-tests:
+        type: boolean
+        default: true
+        description: 'Whether to run tests'
+      node-version:
+        type: string
+        description: 'Node version (override)'
+        required: false
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.inputs.target-repo }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Lire version Node depuis .node-version
+        id: node_version
+        run: |
+          if [ -n "${{ github.event.inputs.node-version }}" ]; then
+            echo "version=${{ github.event.inputs.node-version }}" >> $GITHUB_OUTPUT
+            echo "✅ Version forcée: ${{ github.event.inputs.node-version }}"
+          elif [ -f .node-version ]; then
+            NODE_VER=$(cat .node-version | tr -d ' \n\r')
+            echo "version=$NODE_VER" >> $GITHUB_OUTPUT
+            echo "✅ Version lue: $NODE_VER"
+          else
+            echo "version=18" >> $GITHUB_OUTPUT
+            echo "⚠️ .node-version non trouvé, utilisation 18"
+          fi
+      
+      - name: Setup Node.js ${{ steps.node_version.outputs.version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.node_version.outputs.version }}
+      
+      - name: Cache npm
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node${{ steps.node_version.outputs.version }}-${{ hashFiles('**/package-lock.json') }}
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Tests
+        if: ${{ github.event.inputs.run-tests == 'true' }}
+        run: npm test
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Résultat
+        run: |
+          echo "========================================="
+          echo "✅ Pipeline terminé (workflow_dispatch)"
+          echo "📦 App: ${{ github.event.inputs.target-repo }}"
+          echo "🔧 Node.js: ${{ steps.node_version.outputs.version }}"
+          echo "🧪 Tests: ${{ github.event.inputs.run-tests }}"
+          echo "💾 Cache: ${{ steps.cache.outputs.cache-hit == 'true' && 'RESTAURÉ' || 'CRÉÉ' }}"
+          echo "========================================="

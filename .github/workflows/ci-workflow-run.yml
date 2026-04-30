@@ -1,0 +1,83 @@
+name: 'CI Pipeline - workflow_run'
+
+on:
+  workflow_run:
+    workflows: ["Trigger Workflow for App4"]
+    types:
+      - completed
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+      - name: Download trigger info
+        uses: actions/github-script@v7
+        id: get-info
+        with:
+          script: |
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: ${{ github.event.workflow_run.id }}
+            });
+            
+            if (artifacts.data.artifacts.length > 0) {
+              const download = await github.rest.actions.downloadArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: artifacts.data.artifacts[0].id,
+                archive_format: 'zip'
+              });
+              // Traitement de l'artifact
+              console.log("Artifact téléchargé");
+            }
+            
+            const triggerRepo = process.env.TRIGGER_REPO || '${{ github.repository }}';
+            return { targetRepo: triggerRepo };
+      
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.get-info.outputs.result && fromJson(steps.get-info.outputs.result).targetRepo || github.repository }}
+      
+      - name: Lire version Node depuis .node-version
+        id: node_version
+        run: |
+          if [ -f .node-version ]; then
+            NODE_VER=$(cat .node-version | tr -d ' \n\r')
+            echo "version=$NODE_VER" >> $GITHUB_OUTPUT
+            echo "✅ Version lue: $NODE_VER"
+          else
+            echo "version=18" >> $GITHUB_OUTPUT
+            echo "⚠️ .node-version non trouvé, utilisation 18"
+          fi
+      
+      - name: Setup Node.js ${{ steps.node_version.outputs.version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.node_version.outputs.version }}
+      
+      - name: Cache npm
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node${{ steps.node_version.outputs.version }}-${{ hashFiles('**/package-lock.json') }}
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Résultat
+        run: |
+          echo "========================================="
+          echo "✅ Pipeline terminé (workflow_run - déclenché automatiquement)"
+          echo "📦 App: ${{ github.repository }}"
+          echo "🔧 Node.js: ${{ steps.node_version.outputs.version }}"
+          echo "💾 Cache: ${{ steps.cache.outputs.cache-hit == 'true' && 'RESTAURÉ' || 'CRÉÉ' }}"
+          echo "========================================="

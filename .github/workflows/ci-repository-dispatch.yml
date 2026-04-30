@@ -1,0 +1,61 @@
+name: 'CI Pipeline - repository_dispatch'
+
+on:
+  repository_dispatch:
+    types: [run-ci]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    if: github.event.client_payload.target-repo
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.client_payload.target-repo }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Lire version Node depuis .node-version
+        id: node_version
+        run: |
+          if [ -f .node-version ]; then
+            NODE_VER=$(cat .node-version | tr -d ' \n\r')
+            echo "version=$NODE_VER" >> $GITHUB_OUTPUT
+            echo "✅ Version lue: $NODE_VER"
+          else
+            echo "version=18" >> $GITHUB_OUTPUT
+            echo "⚠️ .node-version non trouvé, utilisation 18"
+          fi
+      
+      - name: Setup Node.js ${{ steps.node_version.outputs.version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.node_version.outputs.version }}
+      
+      - name: Cache npm
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node${{ steps.node_version.outputs.version }}-${{ hashFiles('**/package-lock.json') }}
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Tests
+        if: ${{ github.event.client_payload.run-tests == true }}
+        run: npm test
+      
+      - name: Build
+        run: npm run build
+      
+      - name: Résultat
+        run: |
+          echo "========================================="
+          echo "✅ Pipeline terminé (repository_dispatch)"
+          echo "📦 App: ${{ github.event.client_payload.target-repo }}"
+          echo "🔧 Node.js: ${{ steps.node_version.outputs.version }}"
+          echo "🧪 Tests: ${{ github.event.client_payload.run-tests }}"
+          echo "💾 Cache: ${{ steps.cache.outputs.cache-hit == 'true' && 'RESTAURÉ' || 'CRÉÉ' }}"
+          echo "========================================="
